@@ -1,0 +1,5 @@
+__pycache__/*
+.idea/*
+test_img/*
+train_img/*
+*.csv
