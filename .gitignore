@@ -2,4 +2,6 @@ __pycache__/*
 .idea/*
 test_img/*
 train_img/*
+results/*
+checkpoints/*
 *.csv
