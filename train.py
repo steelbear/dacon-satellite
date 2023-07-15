@@ -5,7 +5,7 @@ from time import localtime, strftime
 from tqdm import tqdm
 from models import UNet
 from datasets import dataloader
-from datasets import make_transform
+
 
 import torchvision.transforms as T
 from PIL import Image
@@ -39,18 +39,18 @@ if __name__ == '__main__':
     for epoch in range(EPOCHS):  # 10 에폭 동안 학습합니다.
         model.train()
         epoch_loss = 0
+        for i in range(16):
+            for images, masks in tqdm(dataloader[i]):
+                images = images.float().to(device)
+                masks = masks.float().to(device)
 
-        for images, masks in tqdm(dataloader):
-            images = images.float().to(device)
-            masks = masks.float().to(device)
+                optimizer.zero_grad()
+                outputs = model(images)
+                loss = criterion(outputs, masks.unsqueeze(1))
+                loss.backward()
+                optimizer.step()
 
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, masks.unsqueeze(1))
-            loss.backward()
-            optimizer.step()
-
-            epoch_loss += loss.item()
+                epoch_loss += loss.item()
 
         print(f'Epoch {epoch+1}, Loss: {epoch_loss/len(dataloader)}')
         crop_num = crop_num + 1;
