@@ -51,9 +51,8 @@ if __name__ == '__main__':
                 optimizer.step()
 
                 epoch_loss += loss.item()
+                print(f'Epoch {epoch + 1}, Loss: {epoch_loss / len(dataloader)}')
 
-        print(f'Epoch {epoch+1}, Loss: {epoch_loss/len(dataloader)}')
-        crop_num = crop_num + 1;
-        if crop_num == 15:
-            crop_num = 0
+
+
     torch.save(model, './checkpoints/' + checkpoint_name) # 학습된 모델 파일 저장
