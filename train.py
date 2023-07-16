@@ -13,16 +13,13 @@ from PIL import Image
 crop_num = 0
 
 if __name__ == '__main__':
-
-
-
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     #device = torch.device('cpu')
     print('training a model on', device)
 
 
     # 하이퍼 파라미터
-    EPOCHS = 202
+    EPOCHS = 20
     LEARNING_RATE = 0.003
 
     # model 초기화
@@ -39,6 +36,7 @@ if __name__ == '__main__':
     for epoch in range(EPOCHS):  # 10 에폭 동안 학습합니다.
         model.train()
         epoch_loss = 0
+        
         for i in range(16):
             for images, masks in tqdm(dataloader[i]):
                 images = images.float().to(device)
@@ -51,7 +49,7 @@ if __name__ == '__main__':
                 optimizer.step()
 
                 epoch_loss += loss.item()
-                print(f'Epoch {epoch + 1}, Loss: {epoch_loss / len(dataloader)}')
+            print(f'Epoch {epoch * 16 + i + 1}, Loss: {epoch_loss / len(dataloader[i])}')
 
 
 
