@@ -48,8 +48,8 @@ if __name__ == '__main__':
                 loss.backward()
                 optimizer.step()
 
-        epoch_loss += loss.item()
-        print(f'Epoch {epoch * 16 + i + 1}, Loss: {epoch_loss / len(dataloader)}')
+            epoch_loss += loss.item()
+            print(f'Epoch {epoch * 16 + i + 1}, Loss: {epoch_loss / len(dataloader)}')
 
 
 
