@@ -49,7 +49,7 @@ if __name__ == '__main__':
                 optimizer.step()
 
                 epoch_loss += loss.item()
-            print(f'Epoch {epoch * 16 + i + 1}, Loss: {epoch_loss / len(dataloader)}')
+            print(f'Epoch {epoch * 16 + i + 1}, Loss: {epoch_loss / len(dataloader[i])}')
 
 
 
