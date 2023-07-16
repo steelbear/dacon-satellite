@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # model 초기화
     model = UNet().to(device)
 
-    model = torch.load('./checkpoints/UNet_0711-022525.pth')
+    model = torch.load('./checkpoints/UNet_0710-062508.pth')
 
     # loss function과 optimizer 정의
     criterion = torch.nn.BCEWithLogitsLoss()

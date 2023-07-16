@@ -70,7 +70,7 @@ for i in range(16):
 
 _transform = A.Compose(
     [
-        #A.Crop (x_min=0, y_min=0, x_max=224, y_max=224),  # 1024x1024 사진을 224x224로 축소
+        A.CenterCrop(224, 224),  # 1024x1024 사진을 224x224로 축소
         A.Normalize(),
         ToTensorV2()
     ]
