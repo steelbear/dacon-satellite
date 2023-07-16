@@ -36,7 +36,6 @@ if __name__ == '__main__':
     for epoch in range(EPOCHS):  # 10 에폭 동안 학습합니다.
         model.train()
         epoch_loss = 0
-        epoch_dice = 0
         
         for i in range(16):
             for images, masks in tqdm(dataloader[i]):
