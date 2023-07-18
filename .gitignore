@@ -1,5 +1,6 @@
 __pycache__/*
 .idea/*
+cropped_train_img/*
 test_img/*
 train_img/*
 results/*

@@ -43,31 +43,7 @@ class SatelliteDataset(Dataset):
             mask = augmented['mask']
 
         return image, mask
-
-
-transform = []
-dataset = []
-dataloader = []
-
-for i in range(16):
-    x = i % 4
-    y = i // 4
-
-    def make_transform(x, y):
-
-        return A.Compose(
-            [
-                A.Crop(x_min=x * 224, y_min=y * 224, x_max=(x + 1) * 224, y_max=(y + 1) * 224),
-                # 1024x1024 사진을 224x224로 축소
-                A.Normalize(),
-                ToTensorV2()
-            ]
-        )
-    transform.append(make_transform(x, y))
-
-    dataset.append(SatelliteDataset(csv_file='./train.csv', transform=transform[i]))
-    dataloader.append(DataLoader(dataset[i], batch_size=1, shuffle=True, num_workers=4))
-
+    
 _transform = A.Compose(
     [
         A.CenterCrop(224, 224),  # 1024x1024 사진을 224x224로 축소
@@ -76,8 +52,11 @@ _transform = A.Compose(
     ]
 )
 
+dataset = SatelliteDataset(csv_file='./cropped_train.csv', transform=_transform)
+dataloader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=4)
+
 test_dataset = SatelliteDataset(csv_file='./test.csv', transform=_transform, infer=True)
-test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4)
+test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False, num_workers=4)
 
 
 if __name__ == '__main__':
