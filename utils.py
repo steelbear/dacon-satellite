@@ -22,6 +22,16 @@ def rle_encode(mask):
     runs[1::2] -= runs[::2]
     return ' '.join(str(x) for x in runs)
 
+def dice_loss(prediction, ground_truth, smooth=1e-7):
+    area_pred = torch.sum(prediction, dim=[1,2,3])
+    area_truth = torch.sum(ground_truth, dim=[1,2,3])
+
+    positive = (torch.sum(prediction * ground_truth, dim=[1,2,3]) + smooth) / (area_pred + area_truth + smooth)
+    negative = (torch.sum((1. - prediction) * (1. - ground_truth), dim=[1,2,3]) + smooth) / (2. - area_pred - area_truth + smooth)
+    loss = 1 - positive - negative
+
+    return loss.sum()
+
 def dice_score_torch(prediction, ground_truth, threshold=0.35, smooth=1e-7):
     '''
     prediction: 예측값이 담긴 tensor (batch_size, 1, height, width)
@@ -32,7 +42,8 @@ def dice_score_torch(prediction, ground_truth, threshold=0.35, smooth=1e-7):
     prediction = torch.nn.functional.sigmoid(prediction)
     prediction = torch.where(prediction > threshold, 1, 0)
     intersection = torch.sum(prediction * ground_truth, [1, 2, 3])
-    return ((2.0 * intersection + smooth) / (torch.sum(prediction, [1, 2, 3]) + torch.sum(ground_truth, [1, 2, 3]) + smooth)).sum()
+    dice = (2.0 * intersection + smooth) / (torch.sum(prediction, [1, 2, 3]) + torch.sum(ground_truth, [1, 2, 3]) + smooth)
+    return dice.sum()
 
 
 # 한 이미지에 대한 dice coefficient 계산

@@ -1,10 +1,14 @@
 import torch
 from torch.multiprocessing import freeze_support
-
 from time import strftime
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+
 from models import UNet
-from datasets import dataloader
+from msnet import MSU_Net
+from resunet import build_resunetplusplus
+from datasets import dataloaders
+from utils import dice_score_torch, dice_loss
 
 crop_num = 0
 
@@ -17,25 +21,33 @@ if __name__ == '__main__':
 
 
     # 하이퍼 파라미터
-    EPOCHS = 1
-    LEARNING_RATE = 0.003
+    EPOCHS = 100
+    LEARNING_RATE = 0.001
+
+    len_dataset = len(dataloaders) * 4
 
     # model 초기화
-    model = UNet().to(device)
+    model = MSU_Net(img_ch=3).to(device)
 
     # 모델 저장 파일 이름
     checkpoint_name = model.__class__.__name__ + '_' + strftime('%m%d-%H%M%S') + '.pth'
 
+    losses = []
+
     # loss function과 optimizer 정의
     criterion = torch.nn.BCEWithLogitsLoss()
+    #criterion = dice_loss
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     # training loop
-    for epoch in range(EPOCHS):  # 10 에폭 동안 학습합니다.
+    for epoch in range(EPOCHS * 16):  # 10 에폭 동안 학습합니다.
         model.train()
         epoch_loss = 0
+        epoch_dice = 0
 
-        for images, masks in tqdm(dataloader):
+        i = epoch % 16
+
+        for images, masks in tqdm(dataloaders[i]):
             images = images.float().to(device)
             masks = masks.float().to(device)
 
@@ -46,7 +58,17 @@ if __name__ == '__main__':
             optimizer.step()
 
             epoch_loss += loss.item()
+            losses.append(loss.item())
+            epoch_dice += dice_score_torch(outputs, masks.unsqueeze(1)).item()
 
-        print(f'Epoch {epoch}, Loss: {epoch_loss / len(dataloader)}')
+        if (epoch + 1) % 32 == 0:
+            torch.save(model, './checkpoints/' + checkpoint_name[:-4] + '_' + str(epoch) + '.pth')
+            plt.plot(losses)
+            plt.xlabel('epoch')
+            plt.ylabel('losses')
+            plt.savefig('./train_losses.png')
+            plt.close()
+
+        print(f'Epoch {epoch // 16} - {epoch % 16 + 1}, Loss: {epoch_loss / len_dataset}, Dice: {epoch_dice / len_dataset}')
 
     torch.save(model, './checkpoints/' + checkpoint_name) # 학습된 모델 파일 저장

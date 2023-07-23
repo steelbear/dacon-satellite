@@ -29,8 +29,7 @@ class SatelliteDataset(Dataset):
         if self.infer:
             if self.transform:
                 image = self.transform(image=image)['image']
-                img_id = self.data.iloc[idx, 0]
-            return image, img_id
+            return image
 
         mask_rle = self.data.iloc[idx, 2]
         mask = rle_decode(mask_rle, (image.shape[0], image.shape[1]))
@@ -43,24 +42,49 @@ class SatelliteDataset(Dataset):
             mask = augmented['mask']
 
         return image, mask
+
+
+datasets = []
+dataloaders = []
+
+for i in range(16):
+    x = i % 4
+    y = i // 4
+
+    def make_transform(x, y):
+        return A.Compose(
+            [
+                # 1024x1024 사진을 224x224로 축소
+                A.Crop(x_min=x * 224, y_min=y * 224, x_max=(x + 1) * 224, y_max=(y + 1) * 224),
+                # Normalize 를 뺴서 원본 데이터 보기 실행시 주석 빼기
+                A.Normalize(),
+                ToTensorV2()
+            ]
+        )
     
+    transform = make_transform(x, y)
+
+    datasets.append(SatelliteDataset(csv_file='./train.csv', transform=transform))
+    dataloaders.append(DataLoader(datasets[i], batch_size=4, shuffle=True, num_workers=1))
+
+
 _transform = A.Compose(
     [
-        A.CenterCrop(224, 224),  # 1024x1024 사진을 224x224로 축소
+        #A.CenterCrop(224, 224),  # 1024x1024 사진을 224x224로 축소
         A.Normalize(),
         ToTensorV2()
     ]
 )
 
-dataset = SatelliteDataset(csv_file='./cropped_train.csv', transform=_transform)
-dataloader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=4)
+train_dataset = SatelliteDataset(csv_file='./cropped_train.csv', transform=_transform)
+train_dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=4)
 
 test_dataset = SatelliteDataset(csv_file='./test.csv', transform=_transform, infer=True)
-test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False, num_workers=4)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4)
 
 
 if __name__ == '__main__':
-    image, mask = dataset[0]
+    image, mask = train_dataset[0]
     image = np.floor(image * 255)
 
     plt.imshow(np.transpose(image, (1, 2, 0)))
