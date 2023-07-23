@@ -29,6 +29,7 @@ def dice_loss(prediction, ground_truth, smooth=1e-7):
     positive = (torch.sum(prediction * ground_truth, dim=[1,2,3]) + smooth) / (area_pred + area_truth + smooth)
     negative = (torch.sum((1. - prediction) * (1. - ground_truth), dim=[1,2,3]) + smooth) / (2. - area_pred - area_truth + smooth)
     loss = 1 - positive - negative
+
     return loss.sum()
 
 def dice_score_torch(prediction, ground_truth, threshold=0.35, smooth=1e-7):
