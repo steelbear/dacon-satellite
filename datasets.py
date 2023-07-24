@@ -4,6 +4,7 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 
 import albumentations as A
+from albumentations.augmentations.transforms import RandomBrightnessContrast
 from albumentations.pytorch import ToTensorV2
 
 from utils import rle_decode
@@ -57,7 +58,7 @@ for i in range(16):
                 # 1024x1024 사진을 224x224로 축소
                 A.Crop(x_min=x * 224, y_min=y * 224, x_max=(x + 1) * 224, y_max=(y + 1) * 224),
                 # Normalize 를 뺴서 원본 데이터 보기 실행시 주석 빼기
-                A.Normalize(),
+                RandomBrightnessContrast(brightness_limit=(-0.1, 0.1), contrast_limit=.3, p=.5),
                 ToTensorV2()
             ]
         )
@@ -71,7 +72,8 @@ for i in range(16):
 _transform = A.Compose(
     [
         #A.CenterCrop(224, 224),  # 1024x1024 사진을 224x224로 축소
-        A.Normalize(),
+        #A.Normalize(),
+        RandomBrightnessContrast(p=0.7),
         ToTensorV2()
     ]
 )
@@ -84,10 +86,8 @@ test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_work
 
 
 if __name__ == '__main__':
-    image, mask = train_dataset[0]
-    image = np.floor(image * 255)
-
-    plt.imshow(np.transpose(image, (1, 2, 0)))
-    plt.show()
-    plt.imshow(mask)
+    for i in range(16):
+        image, mask = datasets[0][i + 20]
+        ax = plt.subplot(4, 4, i + 1)
+        ax.imshow(np.transpose(image, (1, 2, 0)))
     plt.show()
